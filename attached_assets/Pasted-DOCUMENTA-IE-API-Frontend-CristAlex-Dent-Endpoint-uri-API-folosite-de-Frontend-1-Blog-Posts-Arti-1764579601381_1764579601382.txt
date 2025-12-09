@@ -1,0 +1,123 @@
+DOCUMENTAȚIE API - Frontend CristAlex Dent
+Endpoint-uri API folosite de Frontend
+1. Blog Posts (Articole/Blog)
+Metoda	Endpoint	Descriere
+GET	/api/blog-posts	Obține lista completă de articole
+GET	/api/blog-posts/:id	Obține un articol specific
+
+Structura datelor (BlogPost):
+
+{
+  id: number,                    // ID unic
+  title: string,                 // Titlu articol
+  excerpt: string,               // Rezumat scurt
+  content: string,               // Conținut complet (HTML)
+  author: string,                // Nume autor
+  category: string,              // Categorie (ex: "Implantologie")
+  imageUrl: string,              // URL imagine articol
+  publishedAt: Date,             // Data publicării
+  createdAt: Date                // Data creării
+}
+
+2. Team Members (Echipa medicală)
+Metoda	Endpoint	Descriere
+GET	/api/team-members	Obține lista echipei
+
+Structura datelor (TeamMember):
+
+{
+  id: number,                    // ID unic
+  name: string,                  // Nume complet doctor
+  role: string,                  // Specializare/Rol
+  bio: string,                   // Biografie/Descriere
+  imageUrl: string,              // URL fotografie
+  orderIndex: number,            // Ordine afișare (0, 1, 2...)
+  createdAt: Date                // Data creării
+}
+
+3. Testimonials (Recenzii pacienți)
+Metoda	Endpoint	Descriere
+GET	/api/testimonials	Obține toate recenziile
+GET	/api/testimonials?active=true	Obține doar recenziile active
+
+Query Parameters:
+
+    active=true (optional) - filtrează doar recenziile active
+
+Structura datelor (Testimonial):
+
+{
+  id: number,                    // ID unic
+  name: string,                  // Nume pacient
+  role: string,                  // Ocupație (ex: "Antreprenor")
+  text: string,                  // Textul recenziei
+  rating: number,                // Rating (1-5 stele)
+  isActive: boolean,             // Activ/Inactiv (default: true)
+  createdAt: Date                // Data creării
+}
+
+4. Services (Servicii stomatologice)
+Metoda	Endpoint	Descriere
+GET	/api/services	Obține lista de servicii
+
+Structura datelor (Service):
+
+{
+  id: number,                    // ID unic
+  titleKey: string,              // Cheie traducere titlu (ex: "implantology")
+  descKey: string,               // Cheie traducere descriere
+  price: string,                 // Preț (ex: "de la 450 EUR")
+  features: string[],            // Array cu caracteristici (ex: ["Consultație gratuită", "Garanție 10 ani"])
+  imageUrl: string,              // URL imagine serviciu
+  details: string,               // Detalii complete
+  orderIndex: number,            // Ordine afișare
+  createdAt: Date                // Data creării
+}
+
+IMPORTANT: titleKey și descKey sunt chei pentru traduceri (RO/RU/EN), NU text direct!
+5. Social Media Posts (Recenzii Instagram/TikTok)
+Metoda	Endpoint	Descriere
+GET	/api/social-media-posts	Obține postări social media active
+
+Structura datelor (SocialMediaPost):
+
+{
+  id: number,                    // ID unic
+  platform: string,              // "instagram" sau "tiktok"
+  videoUrl: string,              // URL către post (ex: "https://www.instagram.com/p/DPHK-KHDVhC/")
+  titleRo: string,               // Titlu în română
+  titleRu: string,               // Titlu în rusă
+  titleEn: string,               // Titlu în engleză
+  descriptionRo: string | null,  // Descriere în română (optional)
+  descriptionRu: string | null,  // Descriere în rusă (optional)
+  descriptionEn: string | null,  // Descriere în engleză (optional)
+  displayOrder: number,          // Ordine afișare în carousel
+  isActive: boolean,             // Activ/Inactiv (default: true)
+  createdAt: Date                // Data creării
+}
+
+🔄 Comparație cu Backend-ul Actual
+Frontend folosește	Backend are	Status	Acțiune necesară
+/api/blog-posts	/api/blogs	❌ Diferit	Schimbă backend la /api/blog-posts SAU frontend la /api/blogs
+/api/team-members	/api/team	❌ Diferit	Schimbă backend la /api/team-members SAU frontend la /api/team
+/api/testimonials	❓ Nu există	❌ Lipsește	Adaugă endpoint în backend
+/api/services	✅ Există	✅ OK	Perfect!
+/api/social-media-posts	❓ Nu există	❌ Lipsește	Adaugă endpoint în backend
+
+Backend-ul tău are în plus (nu sunt folosite de frontend):
+
+    /api/jobs (Posturi de muncă)
+    /api/works (Portofoliu lucrări)
+    /api/offers (Oferte speciale)
+    /api/forms (Formulare contact)
+    /api/auth (Autentificare admin)
+
+📝 Recomandări pentru Backend Developer
+
+Opțiunea 1 - Backend se adaptează la Frontend (RECOMANDAT):
+
+✅ Renumează `/api/blogs` → `/api/blog-posts`
+✅ Renumează `/api/team` → `/api/team-members`
+✅ Adaugă `/api/testimonials` cu query param `?active=true`
+✅ Adaugă `/api/social-media-posts`
+✅ Păstrează `/api/services` (deja compatibil)
