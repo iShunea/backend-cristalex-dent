@@ -2,12 +2,33 @@ const mongoose = require('mongoose');
 
 const serviceNewSchema = new mongoose.Schema({
   id: { type: Number, unique: true, sparse: true },
-  titleKey: { type: String, required: true },
-  descKey: { type: String, required: true },
-  price: { type: String, required: true },
+  
+  titleKey: { type: String, required: false },
+  descKey: { type: String, required: false },
+  
+  titleEn: { type: String, required: false },
+  titleRo: { type: String, required: false },
+  titleRu: { type: String, required: false },
+  
+  descEn: { type: String, required: false },
+  descRo: { type: String, required: false },
+  descRu: { type: String, required: false },
+  
+  price: { type: String, required: false },
+  
   features: [{ type: String }],
+  
+  featuresEn: [{ type: String }],
+  featuresRo: [{ type: String }],
+  featuresRu: [{ type: String }],
+  
   imageUrl: { type: String, required: false },
-  details: { type: String },
+  details: { type: String, required: false },
+  
+  detailsEn: { type: String, required: false },
+  detailsRo: { type: String, required: false },
+  detailsRu: { type: String, required: false },
+  
   orderIndex: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
