@@ -6,7 +6,7 @@ const serviceNewSchema = new mongoose.Schema({
   descKey: { type: String, required: true },
   price: { type: String, required: true },
   features: [{ type: String }],
-  imageUrl: { type: String, required: true },
+  imageUrl: { type: String, required: false },
   details: { type: String },
   orderIndex: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
