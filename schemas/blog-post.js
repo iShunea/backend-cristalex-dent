@@ -7,7 +7,7 @@ const blogPostSchema = new mongoose.Schema({
   content: { type: String, required: true },
   author: { type: String, required: true },
   category: { type: String, required: true },
-  imageUrl: { type: String, required: true },
+  imageUrl: { type: String, required: false },
   publishedAt: { type: Date, default: Date.now },
   createdAt: { type: Date, default: Date.now }
 });
