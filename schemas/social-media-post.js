@@ -4,6 +4,8 @@ const socialMediaPostSchema = new mongoose.Schema({
   id: { type: Number, unique: true, sparse: true },
   platform: { type: String, required: true, enum: ['instagram', 'tiktok'] },
   videoUrl: { type: String, required: true },
+  imageUrl: { type: String, required: false },
+  thumbnailUrl: { type: String, required: false },
   titleRo: { type: String, required: true },
   titleRu: { type: String, required: true },
   titleEn: { type: String, required: true },
