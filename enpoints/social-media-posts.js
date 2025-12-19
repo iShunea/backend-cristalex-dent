@@ -22,7 +22,15 @@ router.get('/social-media-posts/all', async (req, res) => {
 
 router.get('/social-media-posts/:id', async (req, res) => {
   try {
-    const socialMediaPost = await SocialMediaPost.findOne({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let socialMediaPost;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      socialMediaPost = await SocialMediaPost.findById(paramId);
+    } else {
+      socialMediaPost = await SocialMediaPost.findOne({ id: parseInt(paramId) });
+    }
+
     if (!socialMediaPost) {
       return res.status(404).json({ message: 'Social media post not found' });
     }
@@ -44,11 +52,19 @@ router.post('/social-media-posts', async (req, res) => {
 
 router.put('/social-media-posts/:id', async (req, res) => {
   try {
-    const updatedSocialMediaPost = await SocialMediaPost.findOneAndUpdate(
-      { id: parseInt(req.params.id) },
-      req.body,
-      { new: true }
-    );
+    const paramId = req.params.id;
+    let updatedSocialMediaPost;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      updatedSocialMediaPost = await SocialMediaPost.findByIdAndUpdate(paramId, req.body, { new: true });
+    } else {
+      updatedSocialMediaPost = await SocialMediaPost.findOneAndUpdate(
+        { id: parseInt(paramId) },
+        req.body,
+        { new: true }
+      );
+    }
+
     if (!updatedSocialMediaPost) {
       return res.status(404).json({ message: 'Social media post not found' });
     }
@@ -60,7 +76,15 @@ router.put('/social-media-posts/:id', async (req, res) => {
 
 router.delete('/social-media-posts/:id', async (req, res) => {
   try {
-    const deletedSocialMediaPost = await SocialMediaPost.findOneAndDelete({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let deletedSocialMediaPost;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      deletedSocialMediaPost = await SocialMediaPost.findByIdAndDelete(paramId);
+    } else {
+      deletedSocialMediaPost = await SocialMediaPost.findOneAndDelete({ id: parseInt(paramId) });
+    }
+
     if (!deletedSocialMediaPost) {
       return res.status(404).json({ message: 'Social media post not found' });
     }

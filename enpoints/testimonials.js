@@ -20,7 +20,15 @@ router.get('/testimonials', async (req, res) => {
 
 router.get('/testimonials/:id', async (req, res) => {
   try {
-    const testimonial = await Testimonial.findOne({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let testimonial;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      testimonial = await Testimonial.findById(paramId);
+    } else {
+      testimonial = await Testimonial.findOne({ id: parseInt(paramId) });
+    }
+
     if (!testimonial) {
       return res.status(404).json({ message: 'Testimonial not found' });
     }
@@ -42,11 +50,19 @@ router.post('/testimonials', async (req, res) => {
 
 router.put('/testimonials/:id', async (req, res) => {
   try {
-    const updatedTestimonial = await Testimonial.findOneAndUpdate(
-      { id: parseInt(req.params.id) },
-      req.body,
-      { new: true }
-    );
+    const paramId = req.params.id;
+    let updatedTestimonial;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      updatedTestimonial = await Testimonial.findByIdAndUpdate(paramId, req.body, { new: true });
+    } else {
+      updatedTestimonial = await Testimonial.findOneAndUpdate(
+        { id: parseInt(paramId) },
+        req.body,
+        { new: true }
+      );
+    }
+
     if (!updatedTestimonial) {
       return res.status(404).json({ message: 'Testimonial not found' });
     }
@@ -58,7 +74,15 @@ router.put('/testimonials/:id', async (req, res) => {
 
 router.delete('/testimonials/:id', async (req, res) => {
   try {
-    const deletedTestimonial = await Testimonial.findOneAndDelete({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let deletedTestimonial;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      deletedTestimonial = await Testimonial.findByIdAndDelete(paramId);
+    } else {
+      deletedTestimonial = await Testimonial.findOneAndDelete({ id: parseInt(paramId) });
+    }
+
     if (!deletedTestimonial) {
       return res.status(404).json({ message: 'Testimonial not found' });
     }

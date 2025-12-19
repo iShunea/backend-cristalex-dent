@@ -23,12 +23,25 @@ const serviceNewSchema = new mongoose.Schema({
   featuresRu: [{ type: String }],
   
   imageUrl: { type: String, required: false },
+  heroImage: { type: String, required: false },
+  firstIconPath: { type: String, required: false },
+  secondIconPath: { type: String, required: false },
   details: { type: String, required: false },
   
   detailsEn: { type: String, required: false },
   detailsRo: { type: String, required: false },
   detailsRu: { type: String, required: false },
-  
+
+  // SEO Meta Description
+  metaDescriptionEn: { type: String, required: false },
+  metaDescriptionRo: { type: String, required: false },
+  metaDescriptionRu: { type: String, required: false },
+
+  // SEO Meta Keywords
+  metaKeywordsEn: { type: String, required: false },
+  metaKeywordsRo: { type: String, required: false },
+  metaKeywordsRu: { type: String, required: false },
+
   orderIndex: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });

@@ -31,7 +31,16 @@ router.get('/team-members', async (req, res) => {
 
 router.get('/team-members/:id', async (req, res) => {
   try {
-    const teamMember = await TeamMember.findOne({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let teamMember;
+
+    // Check if it's a MongoDB ObjectId or numeric id
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      teamMember = await TeamMember.findById(paramId);
+    } else {
+      teamMember = await TeamMember.findOne({ id: parseInt(paramId) });
+    }
+
     if (!teamMember) {
       return res.status(404).json({ message: 'Team member not found' });
     }
@@ -57,15 +66,23 @@ router.post('/team-members', upload.single('image'), async (req, res) => {
 
 router.put('/team-members/:id', upload.single('image'), async (req, res) => {
   try {
+    const paramId = req.params.id;
     const teamMemberData = { ...req.body };
     if (req.file) {
       teamMemberData.imageUrl = '/images/team-members/' + req.file.filename;
     }
-    const updatedTeamMember = await TeamMember.findOneAndUpdate(
-      { id: parseInt(req.params.id) },
-      teamMemberData,
-      { new: true }
-    );
+
+    let updatedTeamMember;
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      updatedTeamMember = await TeamMember.findByIdAndUpdate(paramId, teamMemberData, { new: true });
+    } else {
+      updatedTeamMember = await TeamMember.findOneAndUpdate(
+        { id: parseInt(paramId) },
+        teamMemberData,
+        { new: true }
+      );
+    }
+
     if (!updatedTeamMember) {
       return res.status(404).json({ message: 'Team member not found' });
     }
@@ -77,7 +94,15 @@ router.put('/team-members/:id', upload.single('image'), async (req, res) => {
 
 router.delete('/team-members/:id', async (req, res) => {
   try {
-    const deletedTeamMember = await TeamMember.findOneAndDelete({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let deletedTeamMember;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      deletedTeamMember = await TeamMember.findByIdAndDelete(paramId);
+    } else {
+      deletedTeamMember = await TeamMember.findOneAndDelete({ id: parseInt(paramId) });
+    }
+
     if (!deletedTeamMember) {
       return res.status(404).json({ message: 'Team member not found' });
     }

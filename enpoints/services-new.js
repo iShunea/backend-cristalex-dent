@@ -20,6 +20,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+const serviceUpload = upload.fields([
+  { name: 'heroImage', maxCount: 1 },
+  { name: 'firstIconPath', maxCount: 1 },
+  { name: 'secondIconPath', maxCount: 1 },
+  { name: 'image', maxCount: 1 }
+]);
+
 router.get('/services', async (req, res) => {
   try {
     const services = await ServiceNew.find().sort({ orderIndex: 1 });
@@ -31,7 +38,15 @@ router.get('/services', async (req, res) => {
 
 router.get('/services/:id', async (req, res) => {
   try {
-    const service = await ServiceNew.findOne({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let service;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      service = await ServiceNew.findById(paramId);
+    } else {
+      service = await ServiceNew.findOne({ id: parseInt(paramId) });
+    }
+
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
     }
@@ -41,20 +56,32 @@ router.get('/services/:id', async (req, res) => {
   }
 });
 
-router.post('/services', upload.single('image'), async (req, res) => {
+router.post('/services', serviceUpload, async (req, res) => {
   try {
     const serviceData = { ...req.body };
-    
+
     if (req.body.features) {
-      serviceData.features = typeof req.body.features === 'string' 
-        ? JSON.parse(req.body.features) 
+      serviceData.features = typeof req.body.features === 'string'
+        ? JSON.parse(req.body.features)
         : req.body.features;
     }
-    
-    if (req.file) {
-      serviceData.imageUrl = '/images/services/' + req.file.filename;
+
+    // Handle multiple image fields
+    if (req.files) {
+      if (req.files['heroImage']) {
+        serviceData.heroImage = '/images/services/' + req.files['heroImage'][0].filename;
+      }
+      if (req.files['firstIconPath']) {
+        serviceData.firstIconPath = '/images/services/' + req.files['firstIconPath'][0].filename;
+      }
+      if (req.files['secondIconPath']) {
+        serviceData.secondIconPath = '/images/services/' + req.files['secondIconPath'][0].filename;
+      }
+      if (req.files['image']) {
+        serviceData.imageUrl = '/images/services/' + req.files['image'][0].filename;
+      }
     }
-    
+
     const newService = new ServiceNew(serviceData);
     await newService.save();
     res.status(201).json({ message: 'Service created successfully', service: newService });
@@ -63,25 +90,44 @@ router.post('/services', upload.single('image'), async (req, res) => {
   }
 });
 
-router.put('/services/:id', upload.single('image'), async (req, res) => {
+router.put('/services/:id', serviceUpload, async (req, res) => {
   try {
+    const paramId = req.params.id;
     const serviceData = { ...req.body };
-    
+
     if (req.body.features) {
-      serviceData.features = typeof req.body.features === 'string' 
-        ? JSON.parse(req.body.features) 
+      serviceData.features = typeof req.body.features === 'string'
+        ? JSON.parse(req.body.features)
         : req.body.features;
     }
-    
-    if (req.file) {
-      serviceData.imageUrl = '/images/services/' + req.file.filename;
+
+    // Handle multiple image fields
+    if (req.files) {
+      if (req.files['heroImage']) {
+        serviceData.heroImage = '/images/services/' + req.files['heroImage'][0].filename;
+      }
+      if (req.files['firstIconPath']) {
+        serviceData.firstIconPath = '/images/services/' + req.files['firstIconPath'][0].filename;
+      }
+      if (req.files['secondIconPath']) {
+        serviceData.secondIconPath = '/images/services/' + req.files['secondIconPath'][0].filename;
+      }
+      if (req.files['image']) {
+        serviceData.imageUrl = '/images/services/' + req.files['image'][0].filename;
+      }
     }
-    
-    const updatedService = await ServiceNew.findOneAndUpdate(
-      { id: parseInt(req.params.id) },
-      serviceData,
-      { new: true }
-    );
+
+    let updatedService;
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      updatedService = await ServiceNew.findByIdAndUpdate(paramId, serviceData, { new: true });
+    } else {
+      updatedService = await ServiceNew.findOneAndUpdate(
+        { id: parseInt(paramId) },
+        serviceData,
+        { new: true }
+      );
+    }
+
     if (!updatedService) {
       return res.status(404).json({ message: 'Service not found' });
     }
@@ -93,7 +139,15 @@ router.put('/services/:id', upload.single('image'), async (req, res) => {
 
 router.delete('/services/:id', async (req, res) => {
   try {
-    const deletedService = await ServiceNew.findOneAndDelete({ id: parseInt(req.params.id) });
+    const paramId = req.params.id;
+    let deletedService;
+
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      deletedService = await ServiceNew.findByIdAndDelete(paramId);
+    } else {
+      deletedService = await ServiceNew.findOneAndDelete({ id: parseInt(paramId) });
+    }
+
     if (!deletedService) {
       return res.status(404).json({ message: 'Service not found' });
     }

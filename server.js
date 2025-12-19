@@ -9,6 +9,7 @@ const teamMembersRoutes = require('./enpoints/team-members');
 const testimonialsRoutes = require('./enpoints/testimonials');
 const socialMediaPostsRoutes = require('./enpoints/social-media-posts');
 const servicesNewRoutes = require('./enpoints/services-new');
+const beforeAfterRoutes = require('./enpoints/before-after');
 
 const formsRoutes = require('./enpoints/forms');
 const authRoutes = require('./enpoints/auth');
@@ -27,6 +28,7 @@ app.use('/api', teamMembersRoutes);
 app.use('/api', testimonialsRoutes);
 app.use('/api', socialMediaPostsRoutes);
 app.use('/api', servicesNewRoutes);
+app.use('/api', beforeAfterRoutes);
 
 app.use('/api', formsRoutes);
 app.use('/api', authRoutes);
@@ -36,7 +38,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-const PORT = process.env.SERVER_PORT || 5000;
+const PORT = process.env.SERVER_PORT || 5001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
