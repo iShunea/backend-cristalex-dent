@@ -1,24 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const BeforeAfter = require('../schemas/before-after');
+const { uploadToR2 } = require('../handleImage');
 
-const uploadDir = path.join(__dirname, '../images/before-after');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // GET all before/after entries
 router.get('/before-after', async (req, res) => {
@@ -59,10 +45,10 @@ router.post('/before-after', upload.fields([
     const entryData = { ...req.body };
 
     if (req.files['beforeImage']) {
-      entryData.beforeImageUrl = '/images/before-after/' + req.files['beforeImage'][0].filename;
+      entryData.beforeImageUrl = await uploadToR2(req.files['beforeImage'][0], 'before-after');
     }
     if (req.files['afterImage']) {
-      entryData.afterImageUrl = '/images/before-after/' + req.files['afterImage'][0].filename;
+      entryData.afterImageUrl = await uploadToR2(req.files['afterImage'][0], 'before-after');
     }
 
     const newEntry = new BeforeAfter(entryData);
@@ -82,10 +68,10 @@ router.put('/before-after/:id', upload.fields([
     const entryData = { ...req.body };
 
     if (req.files && req.files['beforeImage']) {
-      entryData.beforeImageUrl = '/images/before-after/' + req.files['beforeImage'][0].filename;
+      entryData.beforeImageUrl = await uploadToR2(req.files['beforeImage'][0], 'before-after');
     }
     if (req.files && req.files['afterImage']) {
-      entryData.afterImageUrl = '/images/before-after/' + req.files['afterImage'][0].filename;
+      entryData.afterImageUrl = await uploadToR2(req.files['afterImage'][0], 'before-after');
     }
 
     const updatedEntry = await BeforeAfter.findOneAndUpdate(

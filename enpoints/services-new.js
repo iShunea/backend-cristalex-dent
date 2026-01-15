@@ -1,24 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const ServiceNew = require('../schemas/service-new');
+const { uploadToR2 } = require('../handleImage');
 
-const uploadDir = path.join(__dirname, '../images/services');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 const serviceUpload = upload.fields([
   { name: 'heroImage', maxCount: 1 },
@@ -66,19 +52,19 @@ router.post('/services', serviceUpload, async (req, res) => {
         : req.body.features;
     }
 
-    // Handle multiple image fields
+    // Handle multiple image fields - upload to R2
     if (req.files) {
       if (req.files['heroImage']) {
-        serviceData.heroImage = '/images/services/' + req.files['heroImage'][0].filename;
+        serviceData.heroImage = await uploadToR2(req.files['heroImage'][0], 'services');
       }
       if (req.files['firstIconPath']) {
-        serviceData.firstIconPath = '/images/services/' + req.files['firstIconPath'][0].filename;
+        serviceData.firstIconPath = await uploadToR2(req.files['firstIconPath'][0], 'services');
       }
       if (req.files['secondIconPath']) {
-        serviceData.secondIconPath = '/images/services/' + req.files['secondIconPath'][0].filename;
+        serviceData.secondIconPath = await uploadToR2(req.files['secondIconPath'][0], 'services');
       }
       if (req.files['image']) {
-        serviceData.imageUrl = '/images/services/' + req.files['image'][0].filename;
+        serviceData.imageUrl = await uploadToR2(req.files['image'][0], 'services');
       }
     }
 
@@ -101,19 +87,19 @@ router.put('/services/:id', serviceUpload, async (req, res) => {
         : req.body.features;
     }
 
-    // Handle multiple image fields
+    // Handle multiple image fields - upload to R2
     if (req.files) {
       if (req.files['heroImage']) {
-        serviceData.heroImage = '/images/services/' + req.files['heroImage'][0].filename;
+        serviceData.heroImage = await uploadToR2(req.files['heroImage'][0], 'services');
       }
       if (req.files['firstIconPath']) {
-        serviceData.firstIconPath = '/images/services/' + req.files['firstIconPath'][0].filename;
+        serviceData.firstIconPath = await uploadToR2(req.files['firstIconPath'][0], 'services');
       }
       if (req.files['secondIconPath']) {
-        serviceData.secondIconPath = '/images/services/' + req.files['secondIconPath'][0].filename;
+        serviceData.secondIconPath = await uploadToR2(req.files['secondIconPath'][0], 'services');
       }
       if (req.files['image']) {
-        serviceData.imageUrl = '/images/services/' + req.files['image'][0].filename;
+        serviceData.imageUrl = await uploadToR2(req.files['image'][0], 'services');
       }
     }
 

@@ -1,24 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const TeamMember = require('../schemas/team-member');
+const { uploadToR2 } = require('../handleImage');
 
-const uploadDir = path.join(__dirname, '../images/team-members');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/team-members', async (req, res) => {
   try {
@@ -54,7 +40,7 @@ router.post('/team-members', upload.single('image'), async (req, res) => {
   try {
     const teamMemberData = { ...req.body };
     if (req.file) {
-      teamMemberData.imageUrl = '/images/team-members/' + req.file.filename;
+      teamMemberData.imageUrl = await uploadToR2(req.file, 'team-members');
     }
     const newTeamMember = new TeamMember(teamMemberData);
     await newTeamMember.save();
@@ -69,7 +55,7 @@ router.put('/team-members/:id', upload.single('image'), async (req, res) => {
     const paramId = req.params.id;
     const teamMemberData = { ...req.body };
     if (req.file) {
-      teamMemberData.imageUrl = '/images/team-members/' + req.file.filename;
+      teamMemberData.imageUrl = await uploadToR2(req.file, 'team-members');
     }
 
     let updatedTeamMember;
