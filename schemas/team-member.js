@@ -6,6 +6,7 @@ const teamMemberSchema = new mongoose.Schema({
   role: { type: String, required: true },
   bio: { type: String, required: true },
   imageUrl: { type: String, required: true },
+  certifications: [{ type: String }],
   orderIndex: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });

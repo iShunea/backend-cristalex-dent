@@ -10,13 +10,39 @@ const testimonialsRoutes = require('./enpoints/testimonials');
 const socialMediaPostsRoutes = require('./enpoints/social-media-posts');
 const servicesNewRoutes = require('./enpoints/services-new');
 const beforeAfterRoutes = require('./enpoints/before-after');
+const galleryMediaRoutes = require('./enpoints/gallery-media');
 
 const formsRoutes = require('./enpoints/forms');
 const authRoutes = require('./enpoints/auth');
 const customFormsRoutes = require('./enpoints/custom-forms');
 
 const app = express();
-app.use(cors());
+
+// CORS Configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5000',
+      'http://localhost:3000',
+      'http://localhost:3060',
+      'http://localhost:5173',
+      'https://backend-cristalex-dent.onrender.com'
+    ];
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // For development, allow all origins
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(express.json());
@@ -29,6 +55,7 @@ app.use('/api', testimonialsRoutes);
 app.use('/api', socialMediaPostsRoutes);
 app.use('/api', servicesNewRoutes);
 app.use('/api', beforeAfterRoutes);
+app.use('/api', galleryMediaRoutes);
 
 app.use('/api', formsRoutes);
 app.use('/api', authRoutes);

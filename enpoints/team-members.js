@@ -6,6 +6,11 @@ const { uploadToR2 } = require('../handleImage');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+const uploadFields = upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'certifications', maxCount: 10 }
+]);
+
 router.get('/team-members', async (req, res) => {
   try {
     const teamMembers = await TeamMember.find().sort({ orderIndex: 1 });
@@ -36,12 +41,23 @@ router.get('/team-members/:id', async (req, res) => {
   }
 });
 
-router.post('/team-members', upload.single('image'), async (req, res) => {
+router.post('/team-members', uploadFields, async (req, res) => {
   try {
     const teamMemberData = { ...req.body };
-    if (req.file) {
-      teamMemberData.imageUrl = await uploadToR2(req.file, 'team-members');
+
+    // Handle main image
+    if (req.files && req.files.image && req.files.image[0]) {
+      teamMemberData.imageUrl = await uploadToR2(req.files.image[0], 'team-members');
     }
+
+    // Handle certification images
+    if (req.files && req.files.certifications) {
+      const certificationUrls = await Promise.all(
+        req.files.certifications.map(file => uploadToR2(file, 'team-members/certifications'))
+      );
+      teamMemberData.certifications = certificationUrls;
+    }
+
     const newTeamMember = new TeamMember(teamMemberData);
     await newTeamMember.save();
     res.status(201).json({ message: 'Team member created successfully', teamMember: newTeamMember });
@@ -50,12 +66,22 @@ router.post('/team-members', upload.single('image'), async (req, res) => {
   }
 });
 
-router.put('/team-members/:id', upload.single('image'), async (req, res) => {
+router.put('/team-members/:id', uploadFields, async (req, res) => {
   try {
     const paramId = req.params.id;
     const teamMemberData = { ...req.body };
-    if (req.file) {
-      teamMemberData.imageUrl = await uploadToR2(req.file, 'team-members');
+
+    // Handle main image
+    if (req.files && req.files.image && req.files.image[0]) {
+      teamMemberData.imageUrl = await uploadToR2(req.files.image[0], 'team-members');
+    }
+
+    // Handle certification images
+    if (req.files && req.files.certifications) {
+      const certificationUrls = await Promise.all(
+        req.files.certifications.map(file => uploadToR2(file, 'team-members/certifications'))
+      );
+      teamMemberData.certifications = certificationUrls;
     }
 
     let updatedTeamMember;
