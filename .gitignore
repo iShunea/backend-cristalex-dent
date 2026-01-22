@@ -131,3 +131,13 @@ dist
 
 .history/*
 .history*
+
+# Images (uploaded to R2)
+images/
+
+# Claude temp files
+.claude/
+tmpclaude-*
+
+# Windows temp files
+nul
