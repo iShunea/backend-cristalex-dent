@@ -26,6 +26,10 @@ const corsOptions = {
       'http://localhost:3000',
       'http://localhost:3060',
       'http://localhost:5173',
+      'https://cristalexdent.md',
+      'https://www.cristalexdent.md',
+      'http://cristalexdent.md',
+      'http://www.cristalexdent.md',
       'https://backend-cristalex-dent.onrender.com'
     ];
 
