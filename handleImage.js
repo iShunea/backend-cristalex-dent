@@ -3,10 +3,57 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
+const sharp = require('sharp');
 const r2Client = require('./r2-client');
 
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || 'easyreservwebsiteb2b';
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || 'https://d59ebf7a7ec395a225e24368d8355f1d.r2.cloudflarestorage.com/easyreservwebsiteb2b';
+
+const MAX_WIDTH = 1920;
+const MAX_HEIGHT = 1920;
+const JPEG_QUALITY = 82;
+const PNG_QUALITY = 80;
+const WEBP_QUALITY = 82;
+
+const IMAGE_MIMETYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/tiff', 'image/bmp'];
+
+const optimizeImage = async (buffer, mimetype) => {
+    if (!IMAGE_MIMETYPES.includes(mimetype)) {
+        return { buffer, mimetype, ext: null };
+    }
+
+    try {
+        const metadata = await sharp(buffer).metadata();
+        let pipeline = sharp(buffer).rotate(); // auto-rotate based on EXIF
+
+        // Resize if larger than max dimensions
+        if (metadata.width > MAX_WIDTH || metadata.height > MAX_HEIGHT) {
+            pipeline = pipeline.resize(MAX_WIDTH, MAX_HEIGHT, {
+                fit: 'inside',
+                withoutEnlargement: true,
+            });
+        }
+
+        // Compress based on format
+        if (mimetype === 'image/png') {
+            pipeline = pipeline.png({ quality: PNG_QUALITY, compressionLevel: 9 });
+            const optimized = await pipeline.toBuffer();
+            return { buffer: optimized, mimetype: 'image/png', ext: '.png' };
+        } else if (mimetype === 'image/webp') {
+            pipeline = pipeline.webp({ quality: WEBP_QUALITY });
+            const optimized = await pipeline.toBuffer();
+            return { buffer: optimized, mimetype: 'image/webp', ext: '.webp' };
+        } else {
+            // JPEG, TIFF, BMP → convert to JPEG
+            pipeline = pipeline.jpeg({ quality: JPEG_QUALITY, mozjpeg: true });
+            const optimized = await pipeline.toBuffer();
+            return { buffer: optimized, mimetype: 'image/jpeg', ext: '.jpg' };
+        }
+    } catch (err) {
+        console.warn('Image optimization failed, uploading original:', err.message);
+        return { buffer, mimetype, ext: null };
+    }
+};
 
 const uploadToR2 = async (file, subDir) => {
     if (!r2Client) {
@@ -14,20 +61,26 @@ const uploadToR2 = async (file, subDir) => {
         return null;
     }
 
-    const fileName = uuidv4() + path.extname(file.originalname);
+    // Optimize image before upload
+    const optimized = await optimizeImage(file.buffer, file.mimetype);
+    const ext = optimized.ext || path.extname(file.originalname);
+    const fileName = uuidv4() + ext;
     const key = `${subDir}/${fileName}`;
+
+    const originalSize = (file.buffer.length / 1024).toFixed(0);
+    const newSize = (optimized.buffer.length / 1024).toFixed(0);
 
     try {
         const command = new PutObjectCommand({
             Bucket: R2_BUCKET_NAME,
             Key: key,
-            Body: file.buffer,
-            ContentType: file.mimetype,
+            Body: optimized.buffer,
+            ContentType: optimized.mimetype,
         });
 
         await r2Client.send(command);
-        console.log(`File uploaded to R2: ${key}`);
-        
+        console.log(`File uploaded to R2: ${key} (${originalSize}KB → ${newSize}KB)`);
+
         return `${R2_PUBLIC_URL}/${key}`;
     } catch (error) {
         console.error('Error uploading to R2:', error);
